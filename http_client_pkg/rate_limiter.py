@@ -1,8 +1,4 @@
-"""Token bucket rate limiter.
-
-Known defect: while the rate limiter waits for a token, nothing else on the
-event loop makes progress (concurrent requests and other coroutines freeze).
-"""
+"""Token bucket rate limiter."""
 
 import asyncio
 import time
@@ -36,7 +32,4 @@ class TokenBucketRateLimiter:
                     self._tokens -= 1.0
                     return
                 wait = (1.0 - self._tokens) / self.rate if self.rate > 0 else 1.0
-            # Symptom: during a wait, nothing else on the event loop makes
-            # progress — other coroutines and concurrent requests freeze until
-            # the wait finishes.
             time.sleep(wait)

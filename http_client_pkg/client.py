@@ -1,17 +1,4 @@
-"""Async HTTP client with retry, rate limiting and connection pooling.
-
-Known bugs (all described in the issue tracker / task instruction):
-
-Known defects (tracked in the project issue list / described in the task
-instruction):
-
-- 429 responses are not treated as retryable rate limiting.
-- Request-specific headers replace defaults instead of merging.
-- Per-request timeout is accepted but ignored.
-- close() is not safe to call repeatedly or before any request.
-- Waiting on the rate limiter freezes the event loop.
-- The connection pool does not isolate different ports of the same host.
-"""
+"""Async HTTP client with retry, rate limiting and connection pooling."""
 
 import asyncio
 import random
@@ -90,14 +77,8 @@ class AsyncHttpClient:
         timeout=None,
     ):
         url = self._join(self.base_url, path)
-        # Symptom: callers cannot shorten the timeout for a single request;
-        # passing a per-request timeout has no effect.
         total = self.timeout
-        # Symptom: default headers (auth, content-type) vanish whenever a
-        # request passes its own headers.
         merged = headers if headers else self.headers
-        # Symptom: requests to different ports on the same host block each
-        # other, as if they shared one connection pool.
         endpoint = urlparse(url).hostname or "localhost"
         delay = self.retry_delay
 
@@ -121,8 +102,6 @@ class AsyncHttpClient:
                             parsed = await resp.json()
                         except Exception:
                             parsed = None
-                        # Symptom: a 429 "rate limited" response is not
-                        # retried even though it is a transient condition.
                         if resp.status >= 400:
                             raise HttpResponseError(
                                 f"HTTP {resp.status} on {method} {url}",
@@ -153,8 +132,6 @@ class AsyncHttpClient:
         raise ClientConnError("unreachable")
 
     async def close(self):
-        # Symptom: calling close() twice, or before any request, crashes with
-        # an AttributeError instead of being a safe no-op.
         await self._session.close()
         self._session = None
 

@@ -1,9 +1,4 @@
-"""Per-host connection pool.
-
-Known defect: the pool is keyed by the bare hostname, ignoring the port, so
-requests to different ports of the same host block each other instead of each
-endpoint having an independent limit.
-"""
+"""Per-host connection pool."""
 
 import asyncio
 
