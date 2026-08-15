@@ -32,7 +32,6 @@ class SnapshotStore:
             "attempts": job.attempts,
             "max_retries": job.max_retries,
             "timeout": job.timeout,
-            "result": job.result,
             "error": job.error,
             "last_updated": job.last_updated,
         }

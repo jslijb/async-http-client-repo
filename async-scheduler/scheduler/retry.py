@@ -16,7 +16,7 @@ def next_backoff(job: Job, base: float = 1.0, cap: float = 30.0) -> float:
     """
     if job.attempts <= 0:
         return 0.0
-    exponent = job.attempts - 1
+    exponent = job.attempts
     delay = base * (2 ** exponent)
     if delay > cap:
         delay = cap

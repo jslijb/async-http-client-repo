@@ -29,7 +29,7 @@ class Priority(Enum):
 
 # Valid forward transitions of the job state machine.
 VALID_TRANSITIONS = {
-    JobState.PENDING: {JobState.RUNNING, JobState.CANCELLED},
+    JobState.PENDING: {JobState.RUNNING, JobState.CANCELLED, JobState.FAILED},
     JobState.RUNNING: {JobState.SUCCEEDED, JobState.FAILED, JobState.CANCELLED},
     JobState.SUCCEEDED: set(),
     JobState.FAILED: {JobState.PENDING},  # manual requeue

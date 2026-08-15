@@ -21,6 +21,7 @@ class WorkerPool:
         self.size = size
         self._sem = asyncio.Semaphore(size)
         self._running: dict[str, float] = {}   # job id -> last heartbeat
+        self._heartbeats: dict[str, float] = {}
         self._heartbeat_interval = 1.0
         self._stall_timeout = 5.0
 
@@ -34,7 +35,7 @@ class WorkerPool:
 
     def heartbeat(self, job: Job):
         # refresh the lease timestamp so long-running jobs are not reaped
-        pass
+        self._heartbeats[job.id] = time.time()
 
     def running_count(self) -> int:
         return len(self._running)

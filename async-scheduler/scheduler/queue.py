@@ -36,7 +36,7 @@ class JobQueue:
         """Pop the highest-priority, oldest pending job."""
         with self._lock:
             while self._heap:
-                _neg_prio, _seq, jid = heapq.heappop(self._heap)
+                _prio, _seq, jid = heapq.heappop(self._heap)
                 job = self._jobs.get(jid)
                 if job is None:
                     continue
@@ -48,7 +48,7 @@ class JobQueue:
         with self._lock:
             if not self._heap:
                 return None
-            _neg_prio, _seq, jid = self._heap[0]
+            _prio, _seq, jid = self._heap[0]
             return self._jobs.get(jid)
 
     def remove(self, job_id: str) -> Job | None:
