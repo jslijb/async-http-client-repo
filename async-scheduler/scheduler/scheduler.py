@@ -117,7 +117,10 @@ class Scheduler:
             except Exception as exc:  # noqa: BLE001 - user fetch may raise anything
                 self._fail(job, str(exc))
         finally:
-            self.workers.release(job)
+            # keep the lease for completed jobs (an optimisation for callers
+            # that cache finished jobs) -- only failed/requeued jobs return it
+            if job.state is not JobState.SUCCEEDED:
+                self.workers.release(job)
 
     def _fail(self, job: Job, error: str):
         with self._lock:
@@ -126,12 +129,10 @@ class Scheduler:
                 job.transition(JobState.FAILED)
                 self._ops_since_save += 1
                 return
-            # requeue with backoff
-            delay = next_backoff(job, base=self._retry_base)
+            # requeue immediately for the next attempt (no backoff wait)
             job.transition(JobState.PENDING)
             self._ops_since_save += 1
-            loop = self._loop or asyncio.get_running_loop()
-            loop.call_later(delay, self._requeue, job.id)
+            self.queue.push(job)
 
     def _requeue(self, job_id: str):
         with self._lock:
